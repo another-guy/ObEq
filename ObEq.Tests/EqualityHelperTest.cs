@@ -4,7 +4,7 @@ using Xunit;
 
 namespace ObEq.Tests
 {
-    public class EqualityTest
+    public class EqualityHelperTest
     {
         const string @string = "test";
         private readonly SampleClass<string> sample = new SampleClass<string>(@string);

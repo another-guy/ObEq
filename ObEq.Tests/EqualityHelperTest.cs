@@ -6,14 +6,14 @@ namespace ObEq.Tests
 {
     public class EqualityHelperTest
     {
-        const string @string = "test";
-        private readonly SampleClass<string> sample = new SampleClass<string>(@string);
+        const string SampleParam = "test";
+        private readonly SampleClass<string> SampleObject = new SampleClass<string>(SampleParam);
 
         [Fact]
         public void ReturnsSameHashCodesForSameObjects()
         {
             // Arrange
-            var baseHashCode = EqualityHelper.CalculateHashCode(sample.EqualityMembers);
+            var baseHashCode = EqualityHelper.CalculateHashCode(SampleObject.EqualityMembers);
             foreach (var objectWithSameHashCode in Same)
             {
                 // Act
@@ -27,7 +27,7 @@ namespace ObEq.Tests
         [Fact]
         public void ReturnsDifferentHashCodesForDifferentObjects()
         {
-            var baseHashCode = EqualityHelper.CalculateHashCode(sample.EqualityMembers);
+            var baseHashCode = EqualityHelper.CalculateHashCode(SampleObject.EqualityMembers);
             foreach (var objectWithNotSameHashCode in NotSame)
             {
                 // Act
@@ -41,16 +41,16 @@ namespace ObEq.Tests
         [Fact]
         public void ReferenceEqualityCorrectForSameObject()
         {
-            Assert.True(EqualityHelper.CalculateReferentialEquals(sample, sample));
+            Assert.True(EqualityHelper.CalculateReferentialEquals(SampleObject, SampleObject));
         }
 
         [Fact]
         public void ReferenceEqualityCorrectForDifferentObjects()
         {
-            Assert.False(EqualityHelper.CalculateReferentialEquals(null, sample));
-            Assert.False(EqualityHelper.CalculateReferentialEquals(sample, null));
-            Assert.False(EqualityHelper.CalculateReferentialEquals(sample, 123));
-            Assert.False(EqualityHelper.CalculateReferentialEquals(123, sample));
+            Assert.False(EqualityHelper.CalculateReferentialEquals(null, SampleObject));
+            Assert.False(EqualityHelper.CalculateReferentialEquals(SampleObject, null));
+            Assert.False(EqualityHelper.CalculateReferentialEquals(SampleObject, 123));
+            Assert.False(EqualityHelper.CalculateReferentialEquals(123, SampleObject));
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace ObEq.Tests
             foreach (var equalObject in Same)
             {
                 // Act
-                var areEqual = EqualityHelper.CalculateEquals(sample.EqualityMembers, equalObject.EqualityMembers);
+                var areEqual = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers, equalObject.EqualityMembers);
 
                 // Assert
                 Assert.True(areEqual);
@@ -74,7 +74,7 @@ namespace ObEq.Tests
             foreach (var notEqualObject in NotSame)
             {
                 // Act
-                var areEqual = EqualityHelper.CalculateEquals(sample.EqualityMembers, notEqualObject.EqualityMembers);
+                var areEqual = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers, notEqualObject.EqualityMembers);
 
                 // Assert
                 Assert.False(areEqual);
@@ -88,8 +88,8 @@ namespace ObEq.Tests
             foreach (var notEqualObject in NotSame)
             {
                 // Act
-                var areEqual1 = EqualityHelper.CalculateEquals(sample.EqualityMembers, notEqualObject.EqualityMembers.Take(3).ToArray());
-                var areEqual2 = EqualityHelper.CalculateEquals(sample.EqualityMembers.Take(3).ToArray(), notEqualObject.EqualityMembers);
+                var areEqual1 = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers, notEqualObject.EqualityMembers.Take(3).ToArray());
+                var areEqual2 = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers.Take(3).ToArray(), notEqualObject.EqualityMembers);
 
                 // Assert
                 Assert.False(areEqual1);
@@ -100,23 +100,23 @@ namespace ObEq.Tests
         private List<SampleClass<string>> Same =>
             new List<SampleClass<string>>
             {
-                sample,
-                new SampleClass<string>(@string)
+                SampleObject,
+                new SampleClass<string>(SampleParam)
             };
 
         private static List<SampleClass<string>> NotSame =>
             new List<SampleClass<string>>
             {
-                new SampleClass<string>("other"), // TODO TEST
-                new SampleClass<string>(@string) { I = 35 },
-                new SampleClass<string>(@string) { DC = 234 },
-                new SampleClass<string>(@string) { B = true },
-                new SampleClass<string>(@string) { O = new object() },
-                new SampleClass<string>(@string) { C = 'z' },
-                new SampleClass<string>(@string) { BT = 253 },
-                new SampleClass<string>(@string) { DB = 0.32434d },
-                new SampleClass<string>(@string) { F = 35.213f },
-                new SampleClass<string>(@string) { L = 32345L },
+                new SampleClass<string>(SampleParam.Substring(0, 2)),
+                new SampleClass<string>(SampleParam) { I = 35 },
+                new SampleClass<string>(SampleParam) { DC = 234 },
+                new SampleClass<string>(SampleParam) { B = true },
+                new SampleClass<string>(SampleParam) { O = new object() },
+                new SampleClass<string>(SampleParam) { C = 'z' },
+                new SampleClass<string>(SampleParam) { BT = 253 },
+                new SampleClass<string>(SampleParam) { DB = 0.32434d },
+                new SampleClass<string>(SampleParam) { F = 35.213f },
+                new SampleClass<string>(SampleParam) { L = 32345L }
             };
     }
 

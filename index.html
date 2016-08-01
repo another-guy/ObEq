@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>ObEq by another-guy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">ObEq</h1>
+      <h2 class="project-tagline">Ob[ject]Eq[uality] provides basic implementation for GetHashCode and Equals methods.</h2>
+      <a href="https://github.com/another-guy/ObEq" class="btn">View on GitHub</a>
+      <a href="https://github.com/another-guy/ObEq/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/another-guy/ObEq/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="synopsis" class="anchor" href="#synopsis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Synopsis</h2>
+
+<p>Ob[ject]Eq[uality] provides basic implementation for GetHashCode and Equals methods.</p>
+
+<h2>
+<a id="code-example" class="anchor" href="#code-example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Code Example</h2>
+
+<p>Let's assume there is a class Sample that has two fields.
+It could be defined this way:</p>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">Sample</span>&lt;T&gt;
+{
+    <span class="pl-k">private</span> T field1;
+    <span class="pl-k">private</span> <span class="pl-k">int</span> field2;
+
+    <span class="pl-c">// Constructor(s)...</span>
+
+    <span class="pl-c">// Other methods and properties...</span>
+}</pre></div>
+
+<p>If we need this class to implement GetHashCode() and Equals() methods, it could be easily achieved using ObEq's EqualityHelper class.</p>
+
+<p>First, the EqualityMembers property refers to all fields that should be used as equality members.
+Then, the Equals() and GetHashCode() delegate result calculation to EqualityHelper by passing it the EqualityMembers as an argument.</p>
+
+<p>Notice that EqualityHelper::CalculateReferentialEquals(object1, object2) is used to check whether the references are same or not;
+whereas EqualityHelper::CalculateEquals(equalityMembers1. equalityMembers2) is the method that does the actual fieldwise comparison for two objects.</p>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">private</span> <span class="pl-k">object</span>[] EqualityMembers =&gt; <span class="pl-k">new</span>[] { field1, field2 };
+
+<span class="pl-k">protected</span> <span class="pl-k">bool</span> Equals(Sample&lt;T&gt; other)
+{
+    <span class="pl-k">return</span> EqualityHelper.CalculateEquals(<span class="pl-c1">this</span>.EqualityMembers, other.EqualityMembers);
+}
+
+<span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">bool</span> Equals(<span class="pl-k">object</span> other)
+{
+    <span class="pl-k">var</span> referenceEqualityResult = EqualityHelper.CalculateReferentialEquals(<span class="pl-c1">this</span>, other);
+    <span class="pl-k">return</span> referenceEqualityResult ??
+        EqualityHelper.CalculateEquals(<span class="pl-c1">this</span>.EqualityMembers, ((Sample&lt;T1&gt;)other).EqualityMembers);
+}
+
+<span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">int</span> GetHashCode()
+{
+    <span class="pl-k">return</span> EqualityHelper.CalculateHashCode(EqualityMembers);
+}</pre></div>
+
+<h2>
+<a id="references" class="anchor" href="#references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>References</h2>
+
+<p>MSDN page about hash code: <a href="https://msdn.microsoft.com/en-us/library/system.string.gethashcode(v=vs.110).aspx">https://msdn.microsoft.com/en-us/library/system.string.gethashcode(v=vs.110).aspx</a>
+MSDN page about equals: <a href="https://msdn.microsoft.com/en-us/library/ms173147(v=vs.80).aspx">https://msdn.microsoft.com/en-us/library/ms173147(v=vs.80).aspx</a></p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>ObEq is a available in a form of a NuGet package.
+Follow regular installation process to bring it to your project.
+<a href="https://www.nuget.org/packages/ObEq/">https://www.nuget.org/packages/ObEq/</a></p>
+
+<h2>
+<a id="tests" class="anchor" href="#tests" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tests</h2>
+
+<p>Unit tests are available in ObEq.Tests project.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>The code is distributed under the MIT license.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/another-guy/ObEq">ObEq</a> is maintained by <a href="https://github.com/another-guy">another-guy</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>

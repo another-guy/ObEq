@@ -22,7 +22,7 @@
       <h2>
 <a id="synopsis" class="anchor" href="#synopsis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Synopsis</h2>
 
-<p>Ob[ject]Eq[uality] provides basic implementation for GetHashCode and Equals methods.</p>
+<p>ObEq (from ObjectEquality) provides basic implementation for GetHashCode and Equals methods.</p>
 
 <h2>
 <a id="code-example" class="anchor" href="#code-example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Code Example</h2>
@@ -32,8 +32,8 @@ It could be defined this way:</p>
 
 <div class="highlight highlight-source-cs"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">Sample</span>&lt;T&gt;
 {
-    <span class="pl-k">private</span> T field1;
-    <span class="pl-k">private</span> <span class="pl-k">int</span> field2;
+    <span class="pl-k">private</span> <span class="pl-k">readonly</span> T field1;
+    <span class="pl-k">private</span> <span class="pl-k">readonly</span> <span class="pl-k">int</span> field2;
 
     <span class="pl-c">// Constructor(s)...</span>
 
@@ -42,8 +42,15 @@ It could be defined this way:</p>
 
 <p>If we need this class to implement GetHashCode() and Equals() methods, it could be easily achieved using ObEq's EqualityHelper class.</p>
 
-<p>First, the EqualityMembers property refers to all fields that should be used as equality members.
-Then, the Equals() and GetHashCode() delegate result calculation to EqualityHelper by passing it the EqualityMembers as an argument.</p>
+<p>First, the EqualityMembers property refers to all fields that should be used as equality members.</p>
+
+<p><strong>IMPORTANT</strong>
+The referred fields should be declared as <code>readonly</code> otherwise the calculated hash code value can change every time any field value is modified.
+While it's technically possible to use not <code>readonly</code> (i.e. mutable) fields, it's not recommended because it can break code that relies on object's hashcode consistency.
+Dictionary is an example of a collection that will not tolerate hash code volatility.
+See <a href="https://blogs.msdn.microsoft.com/ericlippert/2011/02/28/guidelines-and-rules-for-gethashcode/">Eric Lippert's blog post</a> and <a href="http://stackoverflow.com/questions/4718009/mutable-objects-and-hashcode">StackOverflow discussion</a> for more details.</p>
+
+<p>Second, the Equals() and GetHashCode() delegate result calculation to EqualityHelper by passing it the EqualityMembers as an argument.</p>
 
 <p>Notice that EqualityHelper::CalculateReferentialEquals(object1, object2) is used to check whether the references are same or not;
 whereas EqualityHelper::CalculateEquals(equalityMembers1. equalityMembers2) is the method that does the actual fieldwise comparison for two objects.</p>

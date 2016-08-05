@@ -57,8 +57,9 @@ public override int GetHashCode()
 
 ## References
 
-MSDN page about hash code: https://msdn.microsoft.com/en-us/library/system.string.gethashcode(v=vs.110).aspx
-MSDN page about equals: https://msdn.microsoft.com/en-us/library/ms173147(v=vs.80).aspx
+[MSDN page about GetHashCode()](https://msdn.microsoft.com/en-us/library/system.string.gethashcode(v=vs.110).aspx)
+
+[MSDN page about Equals() method](https://msdn.microsoft.com/en-us/library/ms173147(v=vs.80).aspx)
 
 ## Installation
 

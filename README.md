@@ -1,6 +1,6 @@
 ﻿## Synopsis
 
-Ob[ject]Eq[uality] provides basic implementation for GetHashCode and Equals methods.
+ObEq (from ObjectEquality) provides basic implementation for GetHashCode and Equals methods.
 
 ## Code Example
 

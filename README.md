@@ -10,19 +10,26 @@ It could be defined this way:
 ```cs
 public class Sample<T>
 {
-    private T field1;
-    private int field2;
+    private readonly T field1;
+    private readonly int field2;
 
     // Constructor(s)...
 
-	// Other methods and properties...
+    // Other methods and properties...
 }
 ```
 
 If we need this class to implement GetHashCode() and Equals() methods, it could be easily achieved using ObEq's EqualityHelper class.
 
 First, the EqualityMembers property refers to all fields that should be used as equality members.
-Then, the Equals() and GetHashCode() delegate result calculation to EqualityHelper by passing it the EqualityMembers as an argument.
+
+**IMPORTANT**
+The referred fields should be declared as `readonly` otherwise the calculated hash code value can change every time any field value is modified.
+While it's technically possible to use not `readonly` (i.e. mutable) fields, it's not recommended because it can break code that relies on object's hashcode consistency.
+Dictionary is an example of a collection that will not tolerate hash code volatility.
+See [Eric Lippert's blog post](https://blogs.msdn.microsoft.com/ericlippert/2011/02/28/guidelines-and-rules-for-gethashcode/) and [StackOverflow discussion](http://stackoverflow.com/questions/4718009/mutable-objects-and-hashcode) for more details.
+
+Second, the Equals() and GetHashCode() delegate result calculation to EqualityHelper by passing it the EqualityMembers as an argument.
 
 Notice that EqualityHelper::CalculateReferentialEquals(object1, object2) is used to check whether the references are same or not;
 whereas EqualityHelper::CalculateEquals(equalityMembers1. equalityMembers2) is the method that does the actual fieldwise comparison for two objects.

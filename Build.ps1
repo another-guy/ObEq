@@ -20,13 +20,28 @@ function Exec
     }
 }
 
+echo "============================ REMOVE OLD ARTIFACTS ==========================="
 if(Test-Path .\artifacts) { Remove-Item .\artifacts -Force -Recurse }
 
+echo "============================ RESTORE DEPENDENCIES ==========================="
 exec { & dotnet restore }
 
-$revision = @{ $true = $env:APPVEYOR_BUILD_NUMBER; $false = 1 }[$env:APPVEYOR_BUILD_NUMBER -ne $NULL];
-$revision = "{0:D4}" -f [convert]::ToInt32($revision, 10)
-
+echo "========================== BUILD TO RUN UNIT TESTS =========================="
 exec { & dotnet test .\ObEq.Tests -c Release }
 
-exec { & dotnet pack .\ObEq -c Release -o .\artifacts --version-suffix=$revision }
+echo "============================= BUILD NUGET PACKAGE ==========================="
+$tagOfHead = iex 'git tag -l --contains HEAD'
+$prefixExpected = $tagOfHead + "-"
+$projectJsonVersion = Get-Content '.\ObEq\project.json' | Out-String | ConvertFrom-Json | select -ExpandProperty version
+
+if ([string]::IsNullOrEmpty($tagOfHead)) {
+  $revision = @{ $true = $env:APPVEYOR_BUILD_NUMBER; $false = 1 }[$env:APPVEYOR_BUILD_NUMBER -ne $NULL];
+  $revision = "b{0:D5}" -f [convert]::ToInt32($revision, 10)
+  exec { & dotnet pack .\ObEq -c Release -o .\artifacts --version-suffix=$revision }
+} elseif ($projectJsonVersion.StartsWith($prefixExpected,"CurrentCultureIgnoreCase")) {
+  exec { & dotnet pack .\ObEq -c Release -o .\artifacts }
+} else {
+  throw ("Target commit is marked with tag " + $tagOfHead + " which is not compatible with project version retrieved from metadata: " + $projectJsonVersion)
+}
+
+echo "=============================== BUILD COMPLETE! ============================="

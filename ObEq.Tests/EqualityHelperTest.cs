@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -41,16 +42,16 @@ namespace ObEq.Tests
         [Fact]
         public void ReferenceEqualityCorrectForSameObject()
         {
-            Assert.True(EqualityHelper.CalculateReferentialEquals(SampleObject, SampleObject));
+            Assert.True(EqualityHelper.ReferencesEqual(SampleObject, SampleObject));
         }
 
         [Fact]
         public void ReferenceEqualityCorrectForDifferentObjects()
         {
-            Assert.False(EqualityHelper.CalculateReferentialEquals(null, SampleObject));
-            Assert.False(EqualityHelper.CalculateReferentialEquals(SampleObject, null));
-            Assert.False(EqualityHelper.CalculateReferentialEquals(SampleObject, 123));
-            Assert.False(EqualityHelper.CalculateReferentialEquals(123, SampleObject));
+            Assert.False(EqualityHelper.ReferencesEqual(null, SampleObject));
+            Assert.False(EqualityHelper.ReferencesEqual(SampleObject, null));
+            Assert.False(EqualityHelper.ReferencesEqual(SampleObject, 123));
+            Assert.False(EqualityHelper.ReferencesEqual(123, SampleObject));
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace ObEq.Tests
             foreach (var equalObject in Same)
             {
                 // Act
-                var areEqual = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers, equalObject.EqualityMembers);
+                var areEqual = EqualityHelper.AllMembersEqual(SampleObject.EqualityMembers, equalObject.EqualityMembers);
 
                 // Assert
                 Assert.True(areEqual);
@@ -74,7 +75,7 @@ namespace ObEq.Tests
             foreach (var notEqualObject in NotSame)
             {
                 // Act
-                var areEqual = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers, notEqualObject.EqualityMembers);
+                var areEqual = EqualityHelper.AllMembersEqual(SampleObject.EqualityMembers, notEqualObject.EqualityMembers);
 
                 // Assert
                 Assert.False(areEqual);
@@ -88,13 +89,37 @@ namespace ObEq.Tests
             foreach (var notEqualObject in NotSame)
             {
                 // Act
-                var areEqual1 = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers, notEqualObject.EqualityMembers.Take(3).ToArray());
-                var areEqual2 = EqualityHelper.CalculateEquals(SampleObject.EqualityMembers.Take(3).ToArray(), notEqualObject.EqualityMembers);
+                var areEqual1 = EqualityHelper.AllMembersEqual(SampleObject.EqualityMembers, notEqualObject.EqualityMembers.Take(3).ToArray());
+                var areEqual2 = EqualityHelper.AllMembersEqual(SampleObject.EqualityMembers.Take(3).ToArray(), notEqualObject.EqualityMembers);
 
                 // Assert
                 Assert.False(areEqual1);
                 Assert.False(areEqual2);
             }
+        }
+
+        [Fact]
+        public void ComparingEqualityMembersWithNullThrowsException()
+        {
+            // Arrange
+            // Act
+            var caught = Assert.Throws<ArgumentNullException>(() =>
+                EqualityHelper.AllMembersEqual(SampleObject.EqualityMembers, null));
+
+            // Assert
+            Assert.True(caught.Message.Contains("equalityMembers2"));
+        }
+
+        [Fact]
+        public void ComparingNullWithEqualityMembersThrowsException()
+        {
+            // Arrange
+            // Act
+            var caught = Assert.Throws<ArgumentNullException>(() =>
+                EqualityHelper.AllMembersEqual(null, SampleObject.EqualityMembers));
+
+            // Assert
+            Assert.True(caught.Message.Contains("equalityMembers1"));
         }
 
         private List<SampleClass<string>> Same =>
@@ -118,52 +143,5 @@ namespace ObEq.Tests
                 new SampleClass<string>(SampleParam) { F = 35.213f },
                 new SampleClass<string>(SampleParam) { L = 32345L }
             };
-    }
-
-    public class SampleClass<T1>
-    {
-        public T1 T { get; set; }
-        public int I { get; set; }
-        public decimal DC { get; set; }
-        public bool B { get; set; }
-        public object O { get; set; }
-        public char C { get; set; }
-        public byte BT { get; set; }
-        public double DB { get; set; }
-        public float F { get; set; }
-        public long L { get; set; }
-
-        public SampleClass(T1 t)
-        {
-            T = t;
-            I = int.MaxValue;
-            DC = decimal.MaxValue;
-            B = false;
-            O = null;
-            C = 'a';
-            BT = byte.MaxValue;
-            DB = double.MaxValue;
-            F = float.MaxValue;
-            L = long.MaxValue;
-        }
-
-        protected bool Equals(SampleClass<T1> other)
-        {
-            return EqualityHelper.CalculateEquals(this.EqualityMembers, other.EqualityMembers);
-        }
-
-        public override bool Equals(object other)
-        {
-            var referenceEqualityResult = EqualityHelper.CalculateReferentialEquals(this, other);
-            return referenceEqualityResult ??
-                EqualityHelper.CalculateEquals(this.EqualityMembers, ((SampleClass<T1>)other).EqualityMembers);
-        }
-
-        public override int GetHashCode()
-        {
-            return EqualityHelper.CalculateHashCode(EqualityMembers);
-        }
-
-        public object[] EqualityMembers => new[] { this.T, I, DC, B, O, C, BT, DB, F, L };
     }
 }

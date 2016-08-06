@@ -31,22 +31,21 @@ See [Eric Lippert's blog post](https://blogs.msdn.microsoft.com/ericlippert/2011
 
 Second, the Equals() and GetHashCode() delegate result calculation to EqualityHelper by passing it the EqualityMembers as an argument.
 
-Notice that EqualityHelper::CalculateReferentialEquals(object1, object2) is used to check whether the references are same or not;
-whereas EqualityHelper::CalculateEquals(equalityMembers1. equalityMembers2) is the method that does the actual fieldwise comparison for two objects.
+Notice that EqualityHelper::ReferencesEqual(object1, object2) is used to check whether the references are same or not;
+whereas EqualityHelper::AllMembersEqual(equalityMembers1, equalityMembers2) is the method that does the actual fieldwise comparison for two objects.
 
 ```cs
 private object[] EqualityMembers => new[] { field1, field2 };
 
-protected bool Equals(Sample<T> other)
+public bool Equals(Sample<T> other)
 {
-	return EqualityHelper.CalculateEquals(this.EqualityMembers, other.EqualityMembers);
+	return EqualityHelper.AllMembersEqual(this.EqualityMembers, other.EqualityMembers);
 }
 
 public override bool Equals(object other)
 {
-	var referenceEqualityResult = EqualityHelper.CalculateReferentialEquals(this, other);
-	return referenceEqualityResult ??
-		EqualityHelper.CalculateEquals(this.EqualityMembers, ((Sample<T1>)other).EqualityMembers);
+	return EqualityHelper.ReferencesEqual(this, other) ??
+		EqualityHelper.AllMembersEqual(this.EqualityMembers, ((Sample<T1>)other).EqualityMembers);
 }
 
 public override int GetHashCode()

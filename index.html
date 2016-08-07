@@ -42,7 +42,11 @@ It could be defined this way:</p>
 
 <p>If we need this class to implement GetHashCode() and Equals() methods, it could be easily achieved using ObEq's EqualityHelper class.</p>
 
-<p>First, the EqualityMembers property refers to all fields that should be used as equality members.</p>
+<h3>
+<a id="implementing-imemberwisecomparable" class="anchor" href="#implementing-imemberwisecomparable" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Implementing IMemberwiseComparable</h3>
+
+<p>First step is to make the target type implement the <code>IMemberwiseComparable</code> interface.
+This will enforce the type to define EqualityMembers property refers to all fields that should be used as equality members.</p>
 
 <p><strong>IMPORTANT</strong>
 The referred fields should be declared as <code>readonly</code> otherwise the calculated hash code value can change every time any field value is modified.
@@ -50,23 +54,57 @@ While it's technically possible to use not <code>readonly</code> (i.e. mutable) 
 Dictionary is an example of a collection that will not tolerate hash code volatility.
 See <a href="https://blogs.msdn.microsoft.com/ericlippert/2011/02/28/guidelines-and-rules-for-gethashcode/">Eric Lippert's blog post</a> and <a href="http://stackoverflow.com/questions/4718009/mutable-objects-and-hashcode">StackOverflow discussion</a> for more details.</p>
 
-<p>Second, the Equals() and GetHashCode() delegate result calculation to EqualityHelper by passing it the EqualityMembers as an argument.</p>
+<p>Second step is to make the Equals() and GetHashCode() delegate result calculation to EqualityHelper class.
+The simplest code will look as following:</p>
 
-<p>Notice that EqualityHelper::CalculateReferentialEquals(object1, object2) is used to check whether the references are same or not;
-whereas EqualityHelper::CalculateEquals(equalityMembers1. equalityMembers2) is the method that does the actual fieldwise comparison for two objects.</p>
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">namespace</span> <span class="pl-en">ObEq.Tests</span>
+{
+    <span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">Sample</span>&lt;T&gt; : <span class="pl-k">IMemberwiseComparable</span>
+    {
+        <span class="pl-k">private</span> <span class="pl-k">readonly</span> T field1;
+        <span class="pl-k">private</span> <span class="pl-k">readonly</span> <span class="pl-k">int</span> field2;
+
+        <span class="pl-k">public</span> <span class="pl-en">Sample</span>(<span class="pl-k">T1</span> <span class="pl-smi">t</span>, <span class="pl-k">int</span> <span class="pl-smi">i</span>)
+        {
+            <span class="pl-c1">this</span>.field1 = t;
+            <span class="pl-c1">this</span>.field2 = i;
+        }
+
+        <span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">bool</span> <span class="pl-en">Equals</span>(<span class="pl-k">object</span> <span class="pl-smi">other</span>)
+        {
+            <span class="pl-k">return</span> EqualityHelper.CalculateEquals(<span class="pl-c1">this</span>, other <span class="pl-k">as</span> IMemberwiseComparable);
+        }
+
+        <span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">int</span> <span class="pl-en">GetHashCode</span>()
+        {
+            <span class="pl-k">return</span> EqualityHelper.CalculateHashCode(EqualityMembers);
+        }
+
+        <span class="pl-k">public</span> <span class="pl-k">object</span>[] EqualityMembers =&gt; <span class="pl-k">new</span>[] { field1, field2 };
+    }
+}</pre></div>
+
+<h3>
+<a id="or-wihtout-implementing-imemberwisecomparable" class="anchor" href="#or-wihtout-implementing-imemberwisecomparable" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>or wihtout implementing IMemberwiseComparable</h3>
+
+<p>Otherwise, you may write a slightly different variation of the code.
+In this scenario you have more control over equality calculation.
+Also, there is no need to implement the IMemberwiseComparable interface.</p>
+
+<p>Notice that EqualityHelper::ReferencesEqual(object1, object2) is used to check whether the references are same or not;
+whereas EqualityHelper::AllMembersEqual(equalityMembers1, equalityMembers2) is the method that does the actual fieldwise comparison for two objects.</p>
 
 <div class="highlight highlight-source-cs"><pre><span class="pl-k">private</span> <span class="pl-k">object</span>[] EqualityMembers =&gt; <span class="pl-k">new</span>[] { field1, field2 };
 
-<span class="pl-k">protected</span> <span class="pl-k">bool</span> Equals(Sample&lt;T&gt; other)
+<span class="pl-k">public</span> <span class="pl-k">bool</span> Equals(Sample&lt;T&gt; other)
 {
-    <span class="pl-k">return</span> EqualityHelper.CalculateEquals(<span class="pl-c1">this</span>.EqualityMembers, other.EqualityMembers);
+    <span class="pl-k">return</span> EqualityHelper.AllMembersEqual(<span class="pl-c1">this</span>.EqualityMembers, other.EqualityMembers);
 }
 
 <span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">bool</span> Equals(<span class="pl-k">object</span> other)
 {
-    <span class="pl-k">var</span> referenceEqualityResult = EqualityHelper.CalculateReferentialEquals(<span class="pl-c1">this</span>, other);
-    <span class="pl-k">return</span> referenceEqualityResult ??
-        EqualityHelper.CalculateEquals(<span class="pl-c1">this</span>.EqualityMembers, ((Sample&lt;T1&gt;)other).EqualityMembers);
+    <span class="pl-k">return</span> EqualityHelper.ReferencesEqual(<span class="pl-c1">this</span>, other) ??
+        EqualityHelper.AllMembersEqual(<span class="pl-c1">this</span>.EqualityMembers, ((Sample&lt;T1&gt;)other).EqualityMembers);
 }
 
 <span class="pl-k">public</span> <span class="pl-k">override</span> <span class="pl-k">int</span> GetHashCode()
@@ -97,6 +135,21 @@ Follow regular installation process to bring it to your project.
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
 
 <p>The code is distributed under the MIT license.</p>
+
+<h2>
+<a id="reporting-an-issue" class="anchor" href="#reporting-an-issue" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Reporting an Issue</h2>
+
+<p>Reporting an issue, proposing a feature, or asking a question are all great ways to improve software quality.</p>
+
+<p>Here are a few important things that package contributors will expect to see in a new born GitHub issue:</p>
+
+<ul>
+<li>the relevant version of the package;</li>
+<li>the steps to reproduce;</li>
+<li>the expected result;</li>
+<li>the observed result;</li>
+<li>some code samples illustrating current inconveniences and/or proposed improvements.</li>
+</ul>
 
 <h2>
 <a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>

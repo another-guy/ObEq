@@ -29,8 +29,8 @@ namespace ObEq
 
         public static bool? ReferencesEqual(object o1, object o2)
         {
-            if (ReferenceEquals(null, o1)) return false;
-            if (ReferenceEquals(null, o2)) return false;
+            if (ReferenceEquals(null, o1) && ReferenceEquals(null, o2)) return true;
+            if (ReferenceEquals(null, o1) || ReferenceEquals(null, o2)) return false;
             if (ReferenceEquals(o1, o2)) return true;
             if (o1.GetType() != o2.GetType()) return false;
             return null;
@@ -64,8 +64,12 @@ namespace ObEq
             return object1.Equals(object2);
         }
 
-        public static bool CalculateEquals(IMemberwiseComparable object1, IMemberwiseComparable object2)
+        public static bool CalculateEquals<T1, T2>(T1 object1, T2 object2)
+            where T1 : IMemberwiseComparable
+            where T2 : IMemberwiseComparable
         {
+            if (typeof(T1) != typeof(T2)) return false;
+
             return EqualityHelper.ReferencesEqual(object1, object2) ??
                 EqualityHelper.AllMembersEqual(object1.EqualityMembers, object2.EqualityMembers);
         }

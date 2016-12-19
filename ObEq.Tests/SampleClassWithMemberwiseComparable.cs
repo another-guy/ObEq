@@ -14,9 +14,9 @@
         public float F { get; set; }
         public long L { get; set; }
 
-        public SampleClassWithMemberwiseComparable(T1 t)
+        public SampleClassWithMemberwiseComparable(T1 genericTypeObject)
         {
-            T = t;
+            T = genericTypeObject;
             I = int.MaxValue;
             DC = decimal.MaxValue;
             B = false;

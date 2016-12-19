@@ -66,6 +66,48 @@ namespace ObEq.Tests
             }
         }
 
+        [Fact]
+        public void NullObjectsAreConsideredSame()
+        {
+            // Arrange
+            SampleClassWithMemberwiseComparable<string> someNull = null;
+            SampleClassWithMemberwiseComparable<string> otherNull = null;
+            
+            // Act
+            var areSame = EqualityHelper.CalculateEquals(someNull, otherNull);
+            
+            // Assert
+            Assert.True(areSame);
+        }
+
+        [Fact]
+        public void CompatibleButNotDifferentTypeObjectsAreNotSameForBothNull()
+        {
+            // Arrange
+            SampleClassWithMemberwiseComparable<string> someNull = null;
+            SampleChildClassWithMemberwiseComparable<string> otherNull = null;
+
+            // Act
+            var areSame = EqualityHelper.CalculateEquals(someNull, otherNull);
+
+            // Assert
+            Assert.False(areSame);
+        }
+
+        [Fact]
+        public void CompatibleButNotDifferentTypeObjectsAreNotSame()
+        {
+            // Arrange
+            var var1 = new SampleClassWithMemberwiseComparable<string>(SampleParam) { I = 35 };
+            var var2 = new SampleChildClassWithMemberwiseComparable<string>(SampleParam, newField: 123) { I = 35 };
+
+            // Act
+            var areSame = EqualityHelper.CalculateEquals(var1, var2);
+
+            // Assert
+            Assert.False(areSame);
+        }
+
         private List<IMemberwiseComparable> Same =>
             new List<IMemberwiseComparable>
             {

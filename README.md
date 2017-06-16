@@ -1,4 +1,4 @@
-﻿## Synopsis
+## Synopsis
 
 ObEq (from ObjectEquality) provides basic implementation for GetHashCode and Equals methods.
 
